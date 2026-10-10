@@ -41,9 +41,9 @@
 
 ## 4. Plan for next week
 
-- Present the demo: the front shell and the domain portals (Auth, Catalog, Concessions and Booking) running with synthetic data.
+- Present the demo: the front shell and the domain portals (Auth, Catalog, Concessions, Booking and Ticketing) running with synthetic data.
 - Continue with the user stories: finish HU-AUTH-001 and HU-AUTH-002, then start HU-AUTH-003 to HU-AUTH-006 following the board (spec and contract first, failing test, then the code).
-- Close the open release PRs of HU-FE-AUTH-001 and HU-FE-CONCESSIONS-001 and keep the documentation in sync with every decision through `docs/* -> main` PRs.
+- Merge the release PRs of HU-FE-AUTH-001 and HU-FE-CONCESSIONS-001 (planned for the day after this report) and keep the documentation in sync with every decision through `docs/* -> main` PRs.
 
 ## 5. Compliance self-check
 
