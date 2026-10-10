@@ -16,8 +16,8 @@
 |---|---|---|---|
 | HU-AUTH-001 | Client Registers an Account | doing | [csp-auth-api#44](https://github.com/code-corhuila/csp-auth-api/pull/44), [csp-auth-api#45](https://github.com/code-corhuila/csp-auth-api/pull/45), [csp-auth-db#24](https://github.com/code-corhuila/csp-auth-db/pull/24) |
 | HU-AUTH-002 | User Authenticates and Receives Tokens | doing | [csp-auth-api#42](https://github.com/code-corhuila/csp-auth-api/pull/42), [csp-auth-api#48](https://github.com/code-corhuila/csp-auth-api/pull/48), [csp-auth-api#49](https://github.com/code-corhuila/csp-auth-api/pull/49) |
-| HU-FE-AUTH-001 | Frontend Auth Renders Synthetic Users | doing | [csp-auth-portal#38](https://github.com/code-corhuila/csp-auth-portal/pull/38) |
-| HU-FE-CONCESSIONS-001 | Frontend Concessions Renders Synthetic Data | doing | [csp-concessions-portal#48](https://github.com/code-corhuila/csp-concessions-portal/pull/48) |
+| HU-FE-AUTH-001 | Frontend Auth Renders Synthetic Users | done | [csp-auth-portal#38](https://github.com/code-corhuila/csp-auth-portal/pull/38) |
+| HU-FE-CONCESSIONS-001 | Frontend Concessions Renders Synthetic Data | done | [csp-concessions-portal#48](https://github.com/code-corhuila/csp-concessions-portal/pull/48) |
 | HU-ARCH-001 | CineSync Architecture and Domain Diagrams | done | [csp-docs#99](https://github.com/code-corhuila/csp-docs/pull/99), [csp-docs#101](https://github.com/code-corhuila/csp-docs/pull/101), [csp-docs#103](https://github.com/code-corhuila/csp-docs/pull/103) |
 
 ## 2. My individual contribution
