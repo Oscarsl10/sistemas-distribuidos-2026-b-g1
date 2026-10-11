@@ -2,7 +2,7 @@
 
 ## Week 10
 
-Period: 2026-10-05 to 2026-10-10. Author: Oscar Sierra (`Oscarsl10`). Same change promoted across several branches is listed once; automatic merge commits are omitted, and promotions of changes already reported in week 9 are not repeated. Newest first.
+Period: 2026-10-05 to 2026-10-11. Author: Oscar Sierra (`Oscarsl10`). Same change promoted across several branches is listed once; automatic merge commits are omitted (this includes the merge commits of the three `v2.0.0` release pull requests), and promotions of changes already reported in week 9 are not repeated. Newest first.
 
 ### Summary
 
@@ -215,3 +215,11 @@ Period: 2026-10-05 to 2026-10-10. Author: Oscar Sierra (`Oscarsl10`). Same chang
 | Commit | Message |
 |---|---|
 | `f4fada27b966` | chore(ticketing): align the remote name, exported routes and dev port with the shell |
+
+### Releases
+
+| Repository | Tag | Pull request | Commit on `main` |
+|---|---|---|---|
+| csp-front | `v2.0.0` | [#37](https://github.com/code-corhuila/csp-front/pull/37) | `ec88c0cdf08b` |
+| csp-auth-portal | `v2.0.0` | [#38](https://github.com/code-corhuila/csp-auth-portal/pull/38) | `639826648332` |
+| csp-concessions-portal | `v2.0.0` | [#48](https://github.com/code-corhuila/csp-concessions-portal/pull/48) | `e06395c6dd71` |

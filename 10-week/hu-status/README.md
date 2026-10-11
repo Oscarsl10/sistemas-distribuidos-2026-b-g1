@@ -14,18 +14,18 @@
 ## 1. User stories worked this week
 | HU ID | Title | Status (todo/doing/done) | Evidence (PR or commit URL) |
 |---|---|---|---|
-| HU-AUTH-001 | Client Registers an Account | doing | [csp-auth-api#44](https://github.com/code-corhuila/csp-auth-api/pull/44), [csp-auth-api#45](https://github.com/code-corhuila/csp-auth-api/pull/45), [csp-auth-db#24](https://github.com/code-corhuila/csp-auth-db/pull/24) |
+| HU-AUTH-001 | Client Registers an Account | done | [csp-auth-api#44](https://github.com/code-corhuila/csp-auth-api/pull/44), [csp-auth-api#45](https://github.com/code-corhuila/csp-auth-api/pull/45), [csp-auth-db#24](https://github.com/code-corhuila/csp-auth-db/pull/24), issues [csp-auth-api#18](https://github.com/code-corhuila/csp-auth-api/issues/18) and [csp-auth-db#17](https://github.com/code-corhuila/csp-auth-db/issues/17) closed |
 | HU-AUTH-002 | User Authenticates and Receives Tokens | doing | [csp-auth-api#42](https://github.com/code-corhuila/csp-auth-api/pull/42), [csp-auth-api#48](https://github.com/code-corhuila/csp-auth-api/pull/48), [csp-auth-api#49](https://github.com/code-corhuila/csp-auth-api/pull/49) |
-| HU-FE-AUTH-001 | Frontend Auth Renders Synthetic Users | done | [csp-auth-portal#38](https://github.com/code-corhuila/csp-auth-portal/pull/38) |
-| HU-FE-CONCESSIONS-001 | Frontend Concessions Renders Synthetic Data | done | [csp-concessions-portal#48](https://github.com/code-corhuila/csp-concessions-portal/pull/48) |
+| HU-FE-AUTH-001 | Frontend Auth Renders Synthetic Users | done | [csp-auth-portal#38](https://github.com/code-corhuila/csp-auth-portal/pull/38) (merged, tag [v2.0.0](https://github.com/code-corhuila/csp-auth-portal/releases/tag/v2.0.0)), issue [csp-auth-portal#1](https://github.com/code-corhuila/csp-auth-portal/issues/1) closed |
+| HU-FE-CONCESSIONS-001 | Frontend Concessions Renders Synthetic Data | done | [csp-concessions-portal#48](https://github.com/code-corhuila/csp-concessions-portal/pull/48) (merged, tag [v2.0.0](https://github.com/code-corhuila/csp-concessions-portal/releases/tag/v2.0.0)), issue [csp-concessions-portal#6](https://github.com/code-corhuila/csp-concessions-portal/issues/6) closed |
 | HU-ARCH-001 | CineSync Architecture and Domain Diagrams | done | [csp-docs#99](https://github.com/code-corhuila/csp-docs/pull/99), [csp-docs#101](https://github.com/code-corhuila/csp-docs/pull/101), [csp-docs#103](https://github.com/code-corhuila/csp-docs/pull/103) |
 
 ## 2. My individual contribution
 
 - **Auth API (HU-AUTH-001, HU-AUTH-002)**: implemented in Go with hexagonal architecture and TDD (126 commits across the repositories this week, listed in [commits.md](commits.md)). Registration: domain model (`User`, `Email`, `Role`, password policy with the 72-byte bcrypt limit), use case and ports, PostgreSQL and bcrypt adapters, `POST /register` wired in the composition root, and idempotent registration through the `Idempotency-Key`. Authentication: login use case, RS256 access token issuer with an RFC 7638 key id, the signing key published at `GET /jwks`, refresh tokens stored and issued, and `POST /login` and `POST /refresh` (rotation) in open PRs. Integration tests run in CI against the `csp-auth-db` schema.
 - **Auth database**: added phone and address columns to `app_user` and the `idempotency_key` table for registration (Flyway, Annex A), grants for the outbox purge, and a CI check of the seed, roles, grants and constraints of the schema.
-- **Frontends with synthetic data**: `csp-auth-portal` (login and register as modals with toasts, in-memory session and role guards, forms with phone and address, 2.0.0 changelog) and `csp-concessions-portal` (synthetic catalog, snack selection, order draft with total, administration screens for products, combos and inventory). Both ship their unit specs and a promotion path `develop` -> `qa` -> `main` (release 2.0.0 PRs open).
-- **Front shell (`csp-front`)**: runtime `config.json` for the gateway URL, design tokens and layout, mounts for the catalog, snack, booking and catalog administration portals, the catalog reports address `/admin/reports` behind the ADMIN guard, session loader that opens protected routes with the Auth portal session, role guard, development-only token sign-in and specs for the mounts.
+- **Frontends with synthetic data**: `csp-auth-portal` (login and register as modals with toasts, in-memory session and role guards, forms with phone and address, 2.0.0 changelog) and `csp-concessions-portal` (synthetic catalog, snack selection, order draft with total, administration screens for products, combos and inventory). Both ship their unit specs and a promotion path `develop` -> `qa` -> `main` (release 2.0.0 merged to `main` and tagged `v2.0.0`).
+- **Front shell (`csp-front`)**, released as `v2.0.0` ([#37](https://github.com/code-corhuila/csp-front/pull/37) merged to `main`): runtime `config.json` for the gateway URL, design tokens and layout, mounts for the catalog, snack, booking and catalog administration portals, the catalog reports address `/admin/reports` behind the ADMIN guard, session loader that opens protected routes with the Auth portal session, role guard, development-only token sign-in and specs for the mounts.
 - **Documentation (`csp-docs`)**: ADR-024 index entry, ADR-025 (api-gateway at port 8000, front shell and remotes), ADR-026 (front-end runtime configuration, remote ports, CORS from the environment), ADR-027 (one federated entry per role in each domain portal), the register contract (phone, address, 72-byte password, `Idempotency-Key` of 8 to 128 characters, 409 codes and `Location`) and the Auth runbook (retention of idempotency keys, expired refresh tokens not purged in the MVP).
 - **Infrastructure**: `csp-infra-mongo` structure with the single MongoDB instance as a single-node replica set and a CI check from an empty volume; `csp-infra-postgres` composes the MongoDB instance and the Auth service in the platform.
 - **Alignment of the remotes**: dev ports of the catalog (4203), concessions (4204) and ticketing portals moved to the values of ADR-026.
@@ -34,7 +34,7 @@
 ## 3. Blockers and risks
 
 - `POST /login` and `POST /refresh` (HU-AUTH-002) are still in review; HU-AUTH-001 and HU-AUTH-002 stay open until their remaining PRs are merged.
-- The release PRs of the Auth and Concessions portals to `main` (2.0.0) wait for the review and the leader's OK.
+- The releases `v2.0.0` of `csp-front`, `csp-auth-portal` and `csp-concessions-portal` are on `main` with their tags, but the portals still run on synthetic data: the known limits (client-side guards, mock credential check, HTTP service not wired) stay open as issues ([csp-auth-portal#39](https://github.com/code-corhuila/csp-auth-portal/issues/39), [csp-concessions-portal#11](https://github.com/code-corhuila/csp-concessions-portal/issues/11), [#12](https://github.com/code-corhuila/csp-concessions-portal/issues/12), [#49](https://github.com/code-corhuila/csp-concessions-portal/issues/49), [csp-front#35](https://github.com/code-corhuila/csp-front/issues/35)).
 - The purge of expired refresh tokens needs a job in `csp-worker` (norm 4.3), which is not started; it is documented as out of the MVP.
 - The 400-line PR cap (norm 9.2) keeps splitting the work into many small PRs and promotion segments, which multiplies merges and syncs.
 - Roles, email change, account lock and password reset (HU-AUTH-003 to HU-AUTH-006) depend on the base of HU-AUTH-001 and HU-AUTH-002 being merged first.
@@ -43,7 +43,7 @@
 
 - Present the demo: the front shell and the domain portals (Auth, Catalog, Concessions, Booking and Ticketing) running with synthetic data.
 - Continue with the user stories: finish HU-AUTH-001 and HU-AUTH-002, then start HU-AUTH-003 to HU-AUTH-006 following the board (spec and contract first, failing test, then the code).
-- Merge the release PRs of HU-FE-AUTH-001 and HU-FE-CONCESSIONS-001 (planned for the day after this report) and keep the documentation in sync with every decision through `docs/* -> main` PRs.
+- Work the follow-up issues of the `v2.0.0` releases and keep the documentation in sync with every decision through `docs/* -> main` PRs.
 
 ## 5. Compliance self-check
 
@@ -62,7 +62,7 @@
 - [Repository: csp-auth-db](https://github.com/code-corhuila/csp-auth-db)
 - [Repository: csp-auth-portal](https://github.com/code-corhuila/csp-auth-portal)
 - [Repository: csp-concessions-portal](https://github.com/code-corhuila/csp-concessions-portal)
-- [Repository: csp-front](https://github.com/code-corhuila/csp-front)
+- [Repository: csp-front](https://github.com/code-corhuila/csp-front) (tag `v2.0.0`)
 - [Repository: csp-infra-mongo](https://github.com/code-corhuila/csp-infra-mongo)
 - [Repository: csp-infra-postgres](https://github.com/code-corhuila/csp-infra-postgres)
 - Week 10 summary session 1-2:
