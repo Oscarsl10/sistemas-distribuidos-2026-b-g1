@@ -9,16 +9,16 @@ Period: 2026-10-05 to 2026-10-10. Author: Oscar Sierra (`Oscarsl10`). Same chang
 | Repository | Commits |
 |---|---|
 | csp-docs | 19 |
-| csp-front | 26 |
+| csp-front | 30 |
 | csp-auth-api | 25 |
 | csp-auth-db | 5 |
 | csp-auth-portal | 15 |
-| csp-concessions-portal | 22 |
 | csp-catalog-portal | 1 |
-| csp-ticketing-portal | 1 |
+| csp-concessions-portal | 22 |
 | csp-infra-mongo | 5 |
 | csp-infra-postgres | 3 |
-| **Total** | **122** |
+| csp-ticketing-portal | 1 |
+| **Total** | **126** |
 
 ### csp-docs
 
@@ -48,10 +48,14 @@ Period: 2026-10-05 to 2026-10-10. Author: Oscar Sierra (`Oscarsl10`). Same chang
 
 ### csp-front
 
-`code-corhuila/csp-front` - 26 commits
+`code-corhuila/csp-front` - 30 commits
 
 | Commit | Message |
 |---|---|
+| `ad85ba400c7b` | docs(changelog): list /admin/reports, 92 specs and csp-ticketing-portal in the CORS limit |
+| `eb98747143a4` | feat(front): mount the catalog reports address /admin/reports behind the ADMIN guard |
+| `caab8372f7e3` | test(front): expect the catalog reports address to be mounted behind the ADMIN guard |
+| `c081ef8995df` | docs(changelog): drop the resolved admin-routes limit and update the CORS limit |
 | `f14af36e2636` | docs(changelog): add the administration mounts, the real spec count and two known limits |
 | `d0dde0c95553` | docs(changelog): describe the development token as accepted only in development builds |
 | `f9222b58f762` | docs(changelog): add the Unreleased section and the client-side limit of the guards |
@@ -145,6 +149,14 @@ Period: 2026-10-05 to 2026-10-10. Author: Oscar Sierra (`Oscarsl10`). Same chang
 | `6494b7c49751` | feat(auth): add login and forgot-password forms |
 | `2f63dcce6150` | feat(auth): add in-memory session and role guards |
 
+### csp-catalog-portal
+
+`code-corhuila/csp-catalog-portal` - 1 commits
+
+| Commit | Message |
+|---|---|
+| `a8bb4f0d69c5` | chore(catalog): move the portal dev port to 4203 |
+
 ### csp-concessions-portal
 
 `code-corhuila/csp-concessions-portal` - 22 commits
@@ -174,22 +186,6 @@ Period: 2026-10-05 to 2026-10-10. Author: Oscar Sierra (`Oscarsl10`). Same chang
 | `4fdb39396303` | chore(concessions): standalone runtime parity and mockup base look |
 | `155f418efa26` | chore(concessions): move the portal dev port to 4204 |
 
-### csp-catalog-portal
-
-`code-corhuila/csp-catalog-portal` - 1 commits
-
-| Commit | Message |
-|---|---|
-| `1a0ce64bcb20` | chore(catalog): move the portal dev port to 4203 |
-
-### csp-ticketing-portal
-
-`code-corhuila/csp-ticketing-portal` - 1 commits
-
-| Commit | Message |
-|---|---|
-| `f4fada27b966` | chore(ticketing): align the remote name, exported routes and dev port with the shell |
-
 ### csp-infra-mongo
 
 `code-corhuila/csp-infra-mongo` - 5 commits
@@ -211,3 +207,11 @@ Period: 2026-10-05 to 2026-10-10. Author: Oscar Sierra (`Oscarsl10`). Same chang
 | `ab51c47fb6d1` | chore(infra): compose the auth service in the platform |
 | `22a4d2a425d2` | fix(infra): print the key file hint on one line |
 | `568dda1af459` | feat(infra): compose the MongoDB instance in the root composition |
+
+### csp-ticketing-portal
+
+`code-corhuila/csp-ticketing-portal` - 1 commits
+
+| Commit | Message |
+|---|---|
+| `f4fada27b966` | chore(ticketing): align the remote name, exported routes and dev port with the shell |
