@@ -6,7 +6,7 @@
 - TEAM: CineSync Platform
 - DOCS_REPO: https://github.com/code-corhuila/csp-docs
 - REFLECTION_DOC: https://docs.google.com/document/d/1CyHnQNAKFdOPH5aWSgI8dA4HJGjx3FLXFZvHkcinvmE/edit?usp=sharing
-- JOURNEY:
+- JOURNEY: Client registers an account (POST /api/v1/auth/register), see 01-journey.md
 <!-- CONFIG-END -->
 
 ## My part of the project
@@ -15,4 +15,4 @@ I own the Auth domain of CineSync Platform: the API `csp-auth-api` (Go), its dat
 sign-in portal `csp-auth-portal` (Angular). I also work on the pieces Auth depends on: the route `/api/v1/auth` of
 `csp-api-gateway`, the Redis instance `csp-infra-redis` and the platform composition in `csp-infra-postgres`.
 
-The workshop journey is written in CP1.
+The workshop journey is in [01-journey.md](01-journey.md).
