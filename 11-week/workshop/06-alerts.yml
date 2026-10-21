@@ -1,0 +1,40 @@
+# Burn-rate alerts for the availability SLO of the registration (05-slo.md):
+# 99.5 % of the requests of POST /api/v1/auth/register without 5xx, in 30 days.
+# Error budget = 0.5 % = 0.005. Metrics of 04-metrics.md (csp-auth-api).
+# The guard "increase(...[1h]) >= 10" is there because the traffic is about 21 requests per hour.
+groups:
+  - name: auth-register-availability
+    rules:
+      # Fast burn: burn rate 14.4 in 1 hour (about 2 % of the monthly budget), confirmed in the last 5 minutes.
+      - alert: AuthRegisterFastBurn
+        expr: |
+          (
+            sum(rate(auth_register_requests_total{outcome="error"}[1h])) / sum(rate(auth_register_requests_total[1h])) > (14.4 * 0.005)
+            and
+            sum(rate(auth_register_requests_total{outcome="error"}[5m])) / sum(rate(auth_register_requests_total[5m])) > (14.4 * 0.005)
+          )
+          and sum(increase(auth_register_requests_total[1h])) >= 10
+        for: 2m
+        labels:
+          severity: page
+          team: auth
+        annotations:
+          summary: "Registration is failing: more than 7.2 % of POST /api/v1/auth/register answer 5xx in the last hour and the last 5 minutes"
+          runbook_url: "https://github.com/Oscarsl10/sistemas-distribuidos-2026-b-g1/blob/main/11-week/workshop/07-runbook.md"
+
+      # Slow burn: burn rate 6 in 6 hours (about 5 % of the monthly budget), confirmed in the last 30 minutes.
+      - alert: AuthRegisterSlowBurn
+        expr: |
+          (
+            sum(rate(auth_register_requests_total{outcome="error"}[6h])) / sum(rate(auth_register_requests_total[6h])) > (6 * 0.005)
+            and
+            sum(rate(auth_register_requests_total{outcome="error"}[30m])) / sum(rate(auth_register_requests_total[30m])) > (6 * 0.005)
+          )
+          and sum(increase(auth_register_requests_total[6h])) >= 30
+        for: 15m
+        labels:
+          severity: ticket
+          team: auth
+        annotations:
+          summary: "Registration is losing its error budget slowly: more than 3 % of POST /api/v1/auth/register answer 5xx in the last 6 hours and the last 30 minutes"
+          runbook_url: "https://github.com/Oscarsl10/sistemas-distribuidos-2026-b-g1/blob/main/11-week/workshop/07-runbook.md"
