@@ -46,7 +46,7 @@ sequenceDiagram
     P->>G: POST /api/v1/auth/register (Idempotency-Key, no trace yet)
     Note over G: creates the trace: traceparent 00-trace_id-span_g-01, X-Correlation-Id
     G->>A: POST /register (traceparent, X-Correlation-Id)
-    A->>D: BEGIN; insert app_user, user_role, idempotency_key, outbox_event (traceparent saved in the row)
+    A->>D: BEGIN, insert app_user, user_role, idempotency_key and outbox_event (traceparent saved in the row)
     D-->>A: COMMIT
     A-->>G: 201 (X-Correlation-Id, traceparent)
     G-->>P: 201 (X-Correlation-Id)
