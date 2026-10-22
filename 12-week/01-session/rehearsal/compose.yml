@@ -1,0 +1,28 @@
+# Blue-green rehearsal. blue runs the current version, green the new one, side by side; the edge
+# sends the traffic to the colour named in edge/active.conf. Nothing here is part of the project.
+name: bluegreen-rehearsal
+
+services:
+  blue:
+    image: ${BLUE_IMAGE:?set BLUE_IMAGE}
+    environment: { ENVIRONMENT: "${ENVIRONMENT:-qa}" }
+    networks: [rehearsal]
+
+  green:
+    image: ${GREEN_IMAGE:?set GREEN_IMAGE}
+    environment: { ENVIRONMENT: "${ENVIRONMENT:-qa}" }
+    networks: [rehearsal]
+
+  edge:
+    image: nginx:1.27-alpine
+    ports: ["127.0.0.1:8090:80"]
+    volumes:
+      - ./edge/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./edge:/etc/nginx/edge
+    depends_on:
+      blue: { condition: service_healthy }
+      green: { condition: service_healthy }
+    networks: [rehearsal]
+
+networks:
+  rehearsal: {}
