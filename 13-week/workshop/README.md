@@ -8,7 +8,7 @@
 - BOUNDARY: csp-api-gateway to csp-auth-api (requests under /api/v1/auth, inbound to Auth)
 - CLAIM_ISSUE: https://github.com/code-corhuila/csp-docs/issues/275
 - REFLECTION_DOC: https://docs.google.com/document/d/1WgrVs7Jf5x53A961HDXYZA3ljsBY6otg4e1RXYTfnwQ/edit?tab=t.0
-- LIBRARY_BOOK: Jean Paul García-Morán, Yago Fernández Hansen, Rubén Martínez Sánchez, Ángel Ochoa Martín and Antonio Ángel Ramos Varón. Hacking y seguridad en Internet. 2nd edition. Bogotá: Ediciones de la U, 2013. Call number 0011099. Used: chapter 3, section 3.5.1 (brute force validation)
+- LIBRARY_BOOK: Jean Paul García-Morán, Yago Fernández Hansen, Rubén Martínez Sánchez, Ángel Ochoa Martín and Antonio Ángel Ramos Varón. Hacking y seguridad en Internet. 2nd edition. Bogotá: Ediciones de la U, 2013. Call number 0011099. Used: chapter 3, section 3.4.1, page 132 (brute force against credentials) and chapter 4, section 4.2.1.3, page 149 (account lockout policy)
 - LIBRARY_RECORD_TIME: 2026-10-28 19:37
 - PULL_REQUEST: https://github.com/code-corhuila/csp-docs/pull/278
 - STORIES: https://github.com/code-corhuila/csp-docs/issues/280, https://github.com/code-corhuila/csp-docs/issues/281, https://github.com/code-corhuila/csp-docs/issues/282
