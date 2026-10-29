@@ -1,0 +1,47 @@
+# Security gates for the pull requests of csp-auth-api (proposal for the team pipeline, Go stack).
+# It lives in the workshop folder of my fork: it is not installed in the team repository today.
+name: security
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dependency-audit:
+    name: Dependency audit (govulncheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - name: Audit the dependencies of the module
+        working-directory: 13-week/workshop/04-security-ci/csp-auth-api
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@v1.1.4
+          govulncheck ./...
+
+  authz-tests:
+    name: Authorization tests (negative)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - name: Requests that must be refused
+        working-directory: 13-week/workshop/04-security-ci/csp-auth-api
+        run: go test -run Authz -v ./...
