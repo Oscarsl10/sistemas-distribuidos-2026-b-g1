@@ -19,7 +19,8 @@
 | Date (YYYY-MM-DD) | Hours | Chapters or labs | Evidence file |
 |---|---|---|---|
 | 2026-10-29 | 0.17 | Enrollment in the course (10 min) | evidence/00-enrollment.png |
-| Total | 0.17 | | |
+| 2026-10-29 | 1.00 | Chapter 1 | evidence/01-chapter-01.png |
+| Total | 1.17 | | |
 
 ## Labs
 
