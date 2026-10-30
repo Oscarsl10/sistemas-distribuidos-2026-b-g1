@@ -1,25 +1,25 @@
-# Certification C3 — TODO full name
+# Certification C3 -- Oscar Guillermo Sierra Lozano
 
 ## Cover
 
 | Item | Detail |
 |---|---|
-| Full name | TODO |
+| Full name | Oscar Guillermo Sierra Lozano |
 | GitHub user | Oscarsl10 |
 | Group (G1 or G2) | G1 |
-| Team | TODO |
-| Team -docs repository (full URL) | TODO |
+| Team | CineSync Platform |
+| Team -docs repository (full URL) | https://github.com/code-corhuila/csp-docs |
 | Course (exact name) | HCCDP-Solution Architectures Course |
 | Course link | https://e.huawei.com/en/talent/ict-academy/#/ict-courses-detail?courseId=6WtKiPd1S1YelBB0AUbE1vXlPgk |
-| Start date (YYYY-MM-DD) | TODO |
+| Start date (YYYY-MM-DD) | 2026-10-29 |
 | Completion date (YYYY-MM-DD) | TODO |
 
 ## Study log
 
 | Date (YYYY-MM-DD) | Hours | Chapters or labs | Evidence file |
 |---|---|---|---|
-| TODO | TODO | TODO | TODO |
-| Total | TODO | | |
+| 2026-10-29 | 0.17 | Enrollment in the course (10 min) | evidence/00-enrollment.png |
+| Total | 0.17 | | |
 
 ## Labs
 
