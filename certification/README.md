@@ -21,7 +21,8 @@
 | 2026-10-29 | 0.17 | Enrollment in the course (10 min) | evidence/00-enrollment.png |
 | 2026-10-29 | 1.00 | Chapter 1 | evidence/01-chapter-01.png |
 | 2026-10-30 | 4.00 | Chapter 2 | evidence/02-chapter-02.png |
-| Total | 5.17 | | |
+| 2026-11-01 | 4.00 | Chapter 3 | evidence/03-chapter-03.png |
+| Total | 9.17 | | |
 
 ## Labs
 
