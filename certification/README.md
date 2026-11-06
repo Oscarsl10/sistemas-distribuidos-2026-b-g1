@@ -24,7 +24,8 @@
 | 2026-11-01 | 4.00 | Chapter 3 | evidence/03-chapter-03.png |
 | 2026-11-03 | 4.00 | Chapter 4 | evidence/04-chapter-04.png |
 | 2026-11-04 | 4.00 | Chapter 5 | evidence/05-chapter-05.png |
-| Total | 17.17 | | |
+| 2026-11-05 | 4.00 | Chapter 6 | evidence/06-chapter-06.png |
+| Total | 21.17 | | |
 
 ## Labs
 
