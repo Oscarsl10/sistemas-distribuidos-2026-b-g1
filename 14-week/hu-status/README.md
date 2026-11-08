@@ -5,33 +5,67 @@
 # Weekly Status - Week 14
 
 <!-- CONFIG-START - must match your profile repo (username/username) CONFIG -->
-- FULL_NAME:
-- GITHUB_USER:
-- TEAM:
-- SPRINT_GOAL:
+- FULL_NAME: Oscar Guillermo Sierra Lozano
+- GITHUB_USER: Oscarsl10
+- TEAM: CineSync Platform
+- SPRINT_GOAL: Take the Ticketing domain end to end (client tickets, notifications and the hold expiry reminder), finish the seat-booking saga of Concessions and close the registration security story (#282, STRIDE I), keeping every release 3.0.0 ready for review.
 <!-- CONFIG-END -->
 
 ## 1. User stories worked this week
 | HU ID | Title | Status (todo/doing/done) | Evidence (PR or commit URL) |
 |---|---|---|---|
-| HU-XXX-001 |  |  |  |
+| HU-TICKETING-005 | Hold expiry reminder and notifications | doing | Merged: [csp-ticketing-api#60](https://github.com/code-corhuila/csp-ticketing-api/pull/60), [#67](https://github.com/code-corhuila/csp-ticketing-api/pull/67), [#73](https://github.com/code-corhuila/csp-ticketing-api/pull/73), [#74](https://github.com/code-corhuila/csp-ticketing-api/pull/74), [csp-ticketing-db#16](https://github.com/code-corhuila/csp-ticketing-db/pull/16), [#21](https://github.com/code-corhuila/csp-ticketing-db/pull/21), [csp-booking-api#89](https://github.com/code-corhuila/csp-booking-api/pull/89), [csp-worker#69](https://github.com/code-corhuila/csp-worker/pull/69), [csp-api-gateway#41](https://github.com/code-corhuila/csp-api-gateway/pull/41), [csp-docs#347](https://github.com/code-corhuila/csp-docs/pull/347), [#355](https://github.com/code-corhuila/csp-docs/pull/355) (ADR-068). Release 3.0.0 pending: [csp-ticketing-api#84](https://github.com/code-corhuila/csp-ticketing-api/pull/84) |
+| HU-TICKETING-006 | Client Views Their Tickets | done | Merged: [csp-ticketing-api#69](https://github.com/code-corhuila/csp-ticketing-api/pull/69) (`GET /me/tickets`), [csp-docs#349](https://github.com/code-corhuila/csp-docs/pull/349), [csp-docs#356](https://github.com/code-corhuila/csp-docs/pull/356) (stories). Story issue [csp-docs#351](https://github.com/code-corhuila/csp-docs/issues/351) closed |
+| HU-FE-TICKETING-002 | Frontend Shows My Tickets From the Ticketing API | done | Merged: [csp-ticketing-portal#43](https://github.com/code-corhuila/csp-ticketing-portal/pull/43). Story issue [csp-docs#352](https://github.com/code-corhuila/csp-docs/issues/352) closed |
+| HU-FE-TICKETING-003 | Frontend Shows My Notifications From the Ticketing API | done | Merged: [csp-ticketing-portal#42](https://github.com/code-corhuila/csp-ticketing-portal/pull/42). Story issue [csp-docs#353](https://github.com/code-corhuila/csp-docs/issues/353) closed |
+| HU-TICKETING-002 | Ticket PDF on object storage and client operations through the gateway | doing | Merged: [csp-ticketing-api#59](https://github.com/code-corhuila/csp-ticketing-api/pull/59), [csp-worker#71](https://github.com/code-corhuila/csp-worker/pull/71), [csp-api-gateway#37](https://github.com/code-corhuila/csp-api-gateway/pull/37), [csp-infra-postgres#60](https://github.com/code-corhuila/csp-infra-postgres/pull/60), [#64](https://github.com/code-corhuila/csp-infra-postgres/pull/64), [csp-infra-rustfs#6](https://github.com/code-corhuila/csp-infra-rustfs/pull/6). Release 3.0.0 pending: [csp-infra-rustfs#8](https://github.com/code-corhuila/csp-infra-rustfs/pull/8) |
+| HU-CONCESSIONS-004 | Book seats as a saga (workflow service) | doing | Merged in `csp-workflow`: [#4](https://github.com/code-corhuila/csp-workflow/pull/4), [#8](https://github.com/code-corhuila/csp-workflow/pull/8) to [#17](https://github.com/code-corhuila/csp-workflow/pull/17) (saga domain, HTTP, Booking client, PostgreSQL store, recovery after restart, end-to-end tests); [csp-api-gateway#34](https://github.com/code-corhuila/csp-api-gateway/pull/34); docs [csp-docs#333](https://github.com/code-corhuila/csp-docs/pull/333), [#335](https://github.com/code-corhuila/csp-docs/pull/335), [#337](https://github.com/code-corhuila/csp-docs/pull/337), [#342](https://github.com/code-corhuila/csp-docs/pull/342). Release 3.0.0 pending: [csp-workflow#26](https://github.com/code-corhuila/csp-workflow/pull/26) |
+| No HU ID (security story) | [Security] Registering an existing email does not reveal the account (STRIDE I, [csp-docs#282](https://github.com/code-corhuila/csp-docs/issues/282)) | done | Merged: [csp-auth-api#216](https://github.com/code-corhuila/csp-auth-api/pull/216), [#217](https://github.com/code-corhuila/csp-auth-api/pull/217), [#218](https://github.com/code-corhuila/csp-auth-api/pull/218), [#219](https://github.com/code-corhuila/csp-auth-api/pull/219); [csp-auth-db#50](https://github.com/code-corhuila/csp-auth-db/pull/50); [csp-auth-portal#94](https://github.com/code-corhuila/csp-auth-portal/pull/94); [csp-api-gateway#29](https://github.com/code-corhuila/csp-api-gateway/pull/29); [csp-infra-postgres#45](https://github.com/code-corhuila/csp-infra-postgres/pull/45); ADR-062 in [csp-docs#320](https://github.com/code-corhuila/csp-docs/pull/320). Story [#282](https://github.com/code-corhuila/csp-docs/issues/282) closed on 2026-11-04 |
+| No HU ID found | Booking: hold data from Catalog, administrator reservation listing, showtimes from Catalog | doing | Merged: [csp-booking-api#83](https://github.com/code-corhuila/csp-booking-api/pull/83), [#84](https://github.com/code-corhuila/csp-booking-api/pull/84), [#86](https://github.com/code-corhuila/csp-booking-api/pull/86), [#91](https://github.com/code-corhuila/csp-booking-api/pull/91), [csp-booking-portal#91](https://github.com/code-corhuila/csp-booking-portal/pull/91); docs [csp-docs#340](https://github.com/code-corhuila/csp-docs/pull/340), [#341](https://github.com/code-corhuila/csp-docs/pull/341), [#360](https://github.com/code-corhuila/csp-docs/pull/360). The listing is also merged in the Booking pull request titled "to release" ([csp-booking-api#93](https://github.com/code-corhuila/csp-booking-api/pull/93)); no Booking release pull request is open this week |
 
 ## 2. My individual contribution
--
+
+Only my own work is listed. Repositories shared with the team (`csp-front`, `csp-api-gateway`, `csp-worker`, `csp-infra-*`) count only my commits and pull requests. Every pull request of this list is merged, except the open release 3.0.0 pull requests, which wait for the review of the professor and the OK of the leader. The status of each story is the one of the board.
+
+- **Ticketing domain, taken over this week.** I became co-owner of the Ticketing domain ([csp-docs#343](https://github.com/code-corhuila/csp-docs/pull/343)) and of the Booking domain ([csp-docs#339](https://github.com/code-corhuila/csp-docs/pull/339)). I built the pieces of the client flow: the list of the tickets of a user, the notifications, the expiry of holds with its warning, and the frontend pages of both ([csp-ticketing-api#69](https://github.com/code-corhuila/csp-ticketing-api/pull/69), [#73](https://github.com/code-corhuila/csp-ticketing-api/pull/73), [csp-ticketing-portal#42](https://github.com/code-corhuila/csp-ticketing-portal/pull/42), [#43](https://github.com/code-corhuila/csp-ticketing-portal/pull/43)). The API now runs in the platform composition with its own CI and an authorization test of the token ([csp-ticketing-api#56](https://github.com/code-corhuila/csp-ticketing-api/pull/56), [#57](https://github.com/code-corhuila/csp-ticketing-api/pull/57), [#58](https://github.com/code-corhuila/csp-ticketing-api/pull/58)).
+- **Hold expiry reminder (HU-TICKETING-005).** The design is in ADR-068 ([csp-docs#355](https://github.com/code-corhuila/csp-docs/pull/355)). Booking publishes the expiry time of a hold ([csp-booking-api#89](https://github.com/code-corhuila/csp-booking-api/pull/89)), the Ticketing database keeps the held reservations ([csp-ticketing-db#21](https://github.com/code-corhuila/csp-ticketing-db/pull/21)), the API creates the warnings ([csp-ticketing-api#74](https://github.com/code-corhuila/csp-ticketing-api/pull/74)), and a worker job triggers them ([csp-worker#69](https://github.com/code-corhuila/csp-worker/pull/69)).
+- **Saga of the seat booking (HU-CONCESSIONS-004).** I built the workflow service in Java: the saga domain and its orchestrator, the HTTP entry, the Booking client with its service token, a PostgreSQL store with a unique key for races, recovery of the sagas a restart cut in the middle, and end-to-end tests that prove the booking and the compensation of a failed saga ([csp-workflow#4](https://github.com/code-corhuila/csp-workflow/pull/4), [#8](https://github.com/code-corhuila/csp-workflow/pull/8) to [#17](https://github.com/code-corhuila/csp-workflow/pull/17)). Its design is in ADR-065 ([csp-docs#337](https://github.com/code-corhuila/csp-docs/pull/337)).
+- **Registration that does not reveal the account (security story #282).** The registration answers the same for an address with an account and for a new one, and the owner of an existing account gets a notice. The new confirmation by link creates the account. The change of the contract `POST /register` (ADR-062, `auth-service.yaml` 1.17.0) was merged on 2026-11-03 with my authorization recorded in its pull request. See the risk in section 3.
+- **Platform composition and TLS.** I composed RabbitMQ, Ticketing, the saga service, the ticket PDF storage and the mail catcher in the platform ([csp-infra-postgres#43](https://github.com/code-corhuila/csp-infra-postgres/pull/43), [#53](https://github.com/code-corhuila/csp-infra-postgres/pull/53), [#57](https://github.com/code-corhuila/csp-infra-postgres/pull/57), [#60](https://github.com/code-corhuila/csp-infra-postgres/pull/60)), with the internal certificate authority and the TLS certificate of Catalog ([csp-infra-postgres#55](https://github.com/code-corhuila/csp-infra-postgres/pull/55), ADR-067 in [csp-docs#344](https://github.com/code-corhuila/csp-docs/pull/344)), and fixed the startup of the migrations and of the saga service ([csp-infra-postgres#61](https://github.com/code-corhuila/csp-infra-postgres/pull/61), [#64](https://github.com/code-corhuila/csp-infra-postgres/pull/64)).
+- **Workflow and governance.** I proposed the stack and the schema of the workflow service ([csp-docs#333](https://github.com/code-corhuila/csp-docs/pull/333), [#334](https://github.com/code-corhuila/csp-docs/pull/334)) and recorded the answers of the project control ([csp-docs#340](https://github.com/code-corhuila/csp-docs/pull/340), [#341](https://github.com/code-corhuila/csp-docs/pull/341), [#358](https://github.com/code-corhuila/csp-docs/pull/358)).
+- **Certification study log (not an HU).** One evidence row per chapter, with its study hours, in the certification folder of the fork: chapters 3 to 7, from 2026-11-01 to 2026-11-07.
+- **Workshop and sessions.** Week 14 sessions 1 and 2 are written as a rehearsal and a plan, in [01-session](../01-session/README.md) and [02-session](../02-session/README.md). Nothing from them is applied to the project.
 
 ## 3. Blockers and risks
--
+
+- GitHub Actions is locked by billing since 2026-10-14. Every pull request of the week was validated locally with the steps of its workflow and merged with my explicit authorization. No check ran on GitHub.
+- The organization is on the Free plan: protected branches and required reviews cannot be enabled on the private repositories (checked on `csp-docs`). The rules of the team are not enforced by GitHub.
+- The contract change of `POST /register` (ADR-062) was merged before release 3.0.0 with my authorization. No review of the team is recorded on its pull request or on story #282. The team should decide whether it accepts this change.
+- The open release 3.0.0 pull requests wait for the review of the professor and the OK of the leader: [csp-ticketing-api#84](https://github.com/code-corhuila/csp-ticketing-api/pull/84), [csp-ticketing-db#23](https://github.com/code-corhuila/csp-ticketing-db/pull/23), [csp-ticketing-portal#47](https://github.com/code-corhuila/csp-ticketing-portal/pull/47), [csp-workflow#26](https://github.com/code-corhuila/csp-workflow/pull/26), [csp-infra-rustfs#8](https://github.com/code-corhuila/csp-infra-rustfs/pull/8), [csp-infra-rabbitmq#9](https://github.com/code-corhuila/csp-infra-rabbitmq/pull/9).
+- The Compose files of several services build from the source instead of using a tagged image, so the image that passed QA is not the one that runs in production.
+- The release 3.0.0 pull requests of the auth service ([csp-auth-api#83](https://github.com/code-corhuila/csp-auth-api/pull/83), [csp-auth-db#33](https://github.com/code-corhuila/csp-auth-db/pull/33), [csp-auth-portal#49](https://github.com/code-corhuila/csp-auth-portal/pull/49), [csp-api-gateway#6](https://github.com/code-corhuila/csp-api-gateway/pull/6)) and of the platform composition ([csp-infra-postgres#15](https://github.com/code-corhuila/csp-infra-postgres/pull/15)) are still open. The change of #282 is in `develop` and `qa`, and reaches `main` only when they are merged.
 
 ## 4. Plan for next week
--
+
+- Get the review of the professor for the release 3.0.0 pull requests and, once approved, merge them in the order of the release (database, API, portal) and tag them.
+- Finish HU-TICKETING-002 (PDF delivery) and HU-TICKETING-004 (retried email delivery) and the saga of the seat booking (HU-CONCESSIONS-004) against the real services.
+- Decide with the team the three options of branch protection (make the repositories public, change the plan, or keep a detective check) in an ADR, and the first two CI gates of the session 2 plan: the coverage floor and the dependency scan.
 
 ## 5. Compliance self-check
-- [ ] Conventional Commits - `type(scope): summary`
-- [ ] Per-environment HU branch + PR to that environment (hu-xxx-dev -> develop, ...)
-- [ ] Testable acceptance criteria
-- [ ] Tests added/updated (unit / integration)
-- [ ] DDD / hexagonal boundaries respected (domain has no I/O)
-- [ ] No secrets; config via environment variables
+
+- [x] Conventional Commits - `type(scope): summary`
+- [x] Per-environment HU branch + PR to that environment (code repos: child branch -> `develop`; `csp-docs`: `docs/* -> main`)
+- [x] Testable acceptance criteria
+- [x] Tests added/updated (unit / integration / contract / end-to-end) in each pull request of the list
+- [x] DDD / hexagonal boundaries respected (domain has no I/O)
+- [x] No secrets; config via environment variables
 
 ## 6. Evidence links
--
+
+- [Session 1: CI/CD, pipelines and quality gates](../01-session/README.md)
+- [Session 2: planning the pipeline and branch protection](../02-session/README.md)
+- [Repository: csp-ticketing-api](https://github.com/code-corhuila/csp-ticketing-api)
+- [Repository: csp-workflow](https://github.com/code-corhuila/csp-workflow)
+- [Repository: csp-auth-api](https://github.com/code-corhuila/csp-auth-api)
+- [Repository: csp-docs](https://github.com/code-corhuila/csp-docs)
+- [Week 13 status](../../13-week/hu-status/README.md)
