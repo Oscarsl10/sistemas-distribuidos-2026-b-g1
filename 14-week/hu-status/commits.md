@@ -24,8 +24,8 @@ Period: 2026-11-02 to 2026-11-07. Author: Oscar Sierra (`Oscarsl10`). Only commi
 | csp-ticketing-portal | 6 |
 | csp-worker | 4 |
 | csp-workflow | 31 |
-| sistemas-distribuidos-2026-b-g1 (my fork) | 9 |
-| **Total** | **136** |
+| sistemas-distribuidos-2026-b-g1 (my fork) | 11 |
+| **Total** | **138** |
 
 ### csp-docs
 
@@ -268,10 +268,12 @@ Period: 2026-11-02 to 2026-11-07. Author: Oscar Sierra (`Oscarsl10`). Only commi
 
 ### sistemas-distribuidos-2026-b-g1 (my fork)
 
-`Oscarsl10/sistemas-distribuidos-2026-b-g1` - 9 commits (week 14 sessions and status)
+`Oscarsl10/sistemas-distribuidos-2026-b-g1` - 11 commits (week 14 sessions and status)
 
 | Commit | Date | Message |
 |---|---|---|
+| `7db030c` | 2026-11-07 | docs(hu-status): add the week 14 commit log and summary, and the approval of the registration contract |
+| `497af35` | 2026-11-07 | docs(w14): record the approval of the registration contract in the session 2 plan |
 | `cbf11d8` | 2026-11-07 | docs(hu-status): update week 14 with the work of the whole week |
 | `9a66220` | 2026-11-07 | docs(w14): add the session 2 plan for the pipeline and branch protection |
 | `6004b87` | 2026-11-07 | docs(w14): add the session 1 report on CI/CD and quality gates |
