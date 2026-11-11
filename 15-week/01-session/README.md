@@ -7,8 +7,9 @@ services, cover the money paths end to end, run a load test against the SLO and 
 
 **Scope of this work.** Nothing is applied to the `csp-*` repositories from this session. The project already has part of these tests, and Section 1 reports
 their results as they are written in the pull requests of the repositories: **I did not run them again today**, except the 16 tests of the Redis circuit breaker and the 7 of the bulkhead of Section 2. Each row says on which commit it was run.
-The two pieces the project does not have, a load test and a chaos experiment, are done as a rehearsal in [rehearsal/](rehearsal/), with a stand-in of a checkout
-and of a payment provider. Section 4 has the real output of the rehearsal.
+The pieces the project does not have are done as a rehearsal in [rehearsal/](rehearsal/), with a stand-in of a checkout and of a payment provider:
+an integration test with Testcontainers, a contract test, an end-to-end test, a load test against an SLO, one chaos experiment and a proposal of the workflow that would run them.
+Section 4 has the real output of the rehearsal.
 
 ## 1. The pyramid for a distributed system, and what the project has
 
@@ -23,7 +24,8 @@ and of a payment provider. Section 4 has the real output of the rehearsal.
 | Load | Nothing | Section 4 (rehearsal) |
 
 Where the real dependencies come from: the project does not use the Testcontainers library. Real PostgreSQL and Redis come from containers that the scripts or the
-workflow start, or from the persistent development environment. I searched the repositories for `testcontainers`, `k6`, `gatling`, `jmeter` and `chaos` in the
+workflow start, or from the persistent development environment. The rehearsal does use Testcontainers, because it is the tool of the session. For validating the project my rule is to use the persistent
+development and qa instances and not throwaway containers, so using Testcontainers there would be a decision to take with the team first. I searched the repositories for `testcontainers`, `k6`, `gatling`, `jmeter` and `chaos` in the
 workflow, build and test files and found none. The contract tests are OpenAPI checks, not consumer-driven contracts with Pact.
 
 ## 2. Chaos in the project: what the end-to-end test already injects
@@ -58,10 +60,14 @@ A small Go module with no dependencies, in [rehearsal/](rehearsal/). It does not
 | `payments.go` | The payment provider: a real HTTP server on a real port. It takes 50 ms per payment and serves 20 at the same time (a capacity of 400 payments per second). It can be killed and started again on the same address |
 | `checkout.go` | The money path: reserve a seat, pay, confirm; if the payment fails, release the seat (the compensation of a saga). A circuit breaker opens after 5 failures in a row, refuses for 500 ms and then lets one probe through |
 | `contract/payments.contract.json` | What the checkout expects from the provider: `200`, `application/json`, the fields `id` and `status`, and the status `APPROVED` |
-| `scale_test.go` | The four tests below |
+| `store.go` | The seats in PostgreSQL: table `seat_hold` with a primary key and a named `CHECK` on the status (the naming conventions of the project), and `Hold`, `Confirm`, `Release` and `Counts` |
+| `integration_test.go` | The integration test: it starts a real PostgreSQL 16 in a container with Testcontainers and removes it at the end; it is skipped, not failed, when Docker is not running |
+| `scale_test.go` | The contract, end-to-end, load and chaos tests below |
+| `ci.yml` | A proposal of the workflow: contract and end to end, and integration, on every pull request; load and chaos once a week |
 
 The tests:
 
+- **Integration with a real database.** The seat store runs against PostgreSQL 16 in a container. Four cases: hold, confirm and release move the seats; the primary key refuses a second hold of the same order; the named `CHECK` refuses a status outside the list; and a seat that is no longer held cannot be moved. The three last cases are the ones a mock of the store accepts and a real database refuses.
 - **Contract.** The checkout (consumer) writes what it expects in the JSON file, and the test checks that the provider answers exactly that.
 - **End to end.** One order through the real HTTP entry and the real provider: the status is `201`, one seat is confirmed and none stays held.
 - **Load.** An open-loop generator (it keeps the rate whatever the answers) sends orders for 2 seconds at 100, 200, 300, 400 and 600 requests per second. The SLO of the rehearsal is p95 at most 250 ms and every order confirmed, with a target of 200 requests per second. The test must fail if the target is not met, and reports the first rate that breaks the SLO.
@@ -69,7 +75,8 @@ The tests:
 
 ## 4. Real output
 
-Go 1.27.0 on Windows 11, 2026-11-11. Command: `cd 15-week/01-session/rehearsal && go test -count=1 -v ./...`.
+Go 1.27.0 on Windows 11, 2026-11-11. Two commands, from `15-week/01-session/rehearsal`: `go test -count=1 -v -run 'Contract|E2E|Load|Chaos' ./...` for the four tests that need no Docker, and
+`go test -count=1 -v -run Integration ./...` for the one that starts a container. The block below is the first one; I ran it again later the same day and the four tests passed again, with numbers that differ by a few milliseconds.
 
 ```text
 === RUN   TestContractPaymentsAnswersWhatCheckoutExpects
@@ -104,6 +111,29 @@ How to read it:
 - **Load.** The provider can serve 400 payments per second, and the test finds the limit where the design says: the SLO holds up to 400 and breaks at 600 (p95 822 ms, and the requests wait for a free slot). The generator sent less than the nominal rate (for example 364 orders in 2 seconds at a nominal 200, an effective 182 per second, probably because of the coarse timer tick of Windows, which I did not check), so the real rate of the last step was about 550 per second.
 - **Chaos.** The 4 orders compensated "before the kill" are the ones in flight when the provider died (100 per second times 50 ms is about 5). The breaker opened after 5 failures and, during the outage, 196 orders were refused at once (p95 1 ms) instead of waiting for a timeout; the 4 compensated ones are the probes that the breaker lets through every 500 ms. Within the first second after the restart, 91 orders were confirmed and 9 were still refused, and in the last two seconds everything was confirmed. No seat stayed held.
 
+**Integration output** (the banner of Testcontainers is left out). The container was started once, used for the four cases and removed; afterwards no container or network of the test was left.
+
+```text
+=== RUN   TestIntegrationSeatStoreAgainstARealPostgres
+=== RUN   TestIntegrationSeatStoreAgainstARealPostgres/hold,_confirm_and_release_move_the_seats
+    integration_test.go:63: counts after hold a, b, c, confirm a and release b: map[CONFIRMED:1 HELD:1 RELEASED:1]
+=== RUN   TestIntegrationSeatStoreAgainstARealPostgres/the_primary_key_refuses_a_second_hold_of_the_same_order
+    integration_test.go:71: second hold of order a: ErrAlreadyHeld (SQLSTATE 23505, pk_seat_hold)
+=== RUN   TestIntegrationSeatStoreAgainstARealPostgres/the_named_CHECK_refuses_a_status_outside_the_list
+    integration_test.go:79: insert with status BOGUS: pq: new row for relation "seat_hold" violates check constraint "ck_seat_hold_status" (23514)
+=== RUN   TestIntegrationSeatStoreAgainstARealPostgres/a_seat_that_is_no_longer_held_cannot_be_moved
+    integration_test.go:91: confirm and release of the released order b, and confirm of an unknown order: ErrNotFound
+--- PASS: TestIntegrationSeatStoreAgainstARealPostgres (15.91s)
+    --- PASS: TestIntegrationSeatStoreAgainstARealPostgres/hold,_confirm_and_release_move_the_seats (0.02s)
+    --- PASS: TestIntegrationSeatStoreAgainstARealPostgres/the_primary_key_refuses_a_second_hold_of_the_same_order (0.04s)
+    --- PASS: TestIntegrationSeatStoreAgainstARealPostgres/the_named_CHECK_refuses_a_status_outside_the_list (0.00s)
+    --- PASS: TestIntegrationSeatStoreAgainstARealPostgres/a_seat_that_is_no_longer_held_cannot_be_moved (0.01s)
+PASS
+ok  	cinesync/w15-session1-scale	16.246s
+```
+
+The two constraints are the point of the test: the database itself answers `23505` for a duplicate order and `23514` for a status that is not in the list, which no in-memory fake would do.
+
 **The tests catch faults.** I changed a copy of the rehearsal twice, and the chaos test failed both times, as it must:
 
 - Without the release of the seat after a failed payment, `held` stayed at 9: `seats: free 999705, held 9, confirmed 286, orders answered 201: 286`.
@@ -114,6 +144,8 @@ How to read it:
 - The rehearsal is one machine, with the checkout, the provider and the generator in the same process on the loopback interface. Real services add network, a database and other processes, so the numbers say how the design behaves, not how fast CineSync Platform is.
 - The SLO of the rehearsal (p95 250 ms, a target of 200 per second) is my assumption to have a number; it is not an SLO of the project. The project has no load figure: nobody has run a load test on its services.
 - A step lasts 2 seconds. A real load test runs for minutes to find leaks and slow growth, and it uses a tool such as k6 (not installed on this machine) that reports the rate it really sent.
+- The integration test needs Docker. I ran it once, before knowing that another stack was running in Docker on this machine, and no container was left. I did not run it again, so the output above is from that one run.
+- `ci.yml` was checked only as YAML (it parses, with the triggers `pull_request` and `schedule` and three jobs). I did not run `actionlint` on it, because that needs a container image and Docker was busy with another stack. It never ran on GitHub, where Actions is locked by billing.
 - The contract of the rehearsal is a JSON file read by a test, not Pact. It shows the idea of a consumer-driven contract, not the broker and the verification of a provider in CI.
 - The results of Section 1 come from the pull requests, on the commits they name, and they were not run again today. GitHub Actions is locked by billing, so none of them ran in CI.
 - The money path of the project is the saga that holds and confirms seats; there is no payment step in it, and the payment of the rehearsal is the example of the session.
@@ -121,7 +153,7 @@ How to read it:
 ## 6. Self-check (answers)
 
 1. **In the distributed pyramid you have...** many unit tests, fewer integration and contract tests, and few end-to-end tests, with load and chaos on top.
-2. **Testcontainers are used to...** run a real database or broker in a container during the integration tests. The project gets the same result with containers started by its scripts.
+2. **Testcontainers are used to...** run a real database or broker in a container during the integration tests, and remove it afterwards. The rehearsal does it with PostgreSQL 16, and the database itself refuses a duplicate order and a status outside the list.
 3. **Load testing exists to...** find the capacity and latency limits against the SLOs before the users do. The rehearsal found the limit at the rate where its design said.
 4. **Chaos engineering means...** injecting a failure to check that the system degrades gracefully. The rehearsal kills the provider and the system refuses fast and recovers.
 5. **Contract tests protect...** the compatibility between producers and consumers across services.
