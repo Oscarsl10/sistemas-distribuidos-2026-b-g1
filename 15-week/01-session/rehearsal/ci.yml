@@ -1,0 +1,50 @@
+# Proposal: how the tests of the rehearsal would run in a pipeline. It lives in the rehearsal folder of my fork:
+# it is not installed in any team repository, and GitHub Actions of the organization is locked by billing.
+name: scale-tests
+
+on:
+  pull_request:
+  schedule:
+    - cron: "0 5 * * 1" # every Monday: load and chaos are too slow and too noisy for every pull request
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: 15-week/01-session/rehearsal
+
+jobs:
+  unit-and-contract:
+    name: Contract and end to end (fast)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 15-week/01-session/rehearsal/go.mod
+      - name: The consumer contract and the money path
+        run: go test -count=1 -v -run 'Contract|E2E' ./...
+
+  integration:
+    name: Integration with a real PostgreSQL (Testcontainers)
+    runs-on: ubuntu-latest # the hosted runner has Docker, which Testcontainers needs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 15-week/01-session/rehearsal/go.mod
+      - name: The seat store against PostgreSQL 16 in a container
+        run: go test -count=1 -v -run Integration ./...
+
+  load-and-chaos:
+    name: Load against the SLO and one chaos experiment
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 15-week/01-session/rehearsal/go.mod
+      - name: Find the breaking point and kill the provider mid flow
+        run: go test -count=1 -v -run 'Load|Chaos' ./...
