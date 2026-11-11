@@ -6,10 +6,10 @@ The task of the session: apply the testing pyramid to a distributed system, use 
 services, cover the money paths end to end, run a load test against the SLO and prove the resilience with one chaos experiment.
 
 **Scope of this work.** Nothing is applied to the `csp-*` repositories from this session. The project already has part of these tests, and Section 1 reports
-their results as they are written in the pull requests of the repositories: **I did not run them again today**, except the 16 tests of the Redis circuit breaker and the 7 of the bulkhead of Section 2. Each row says on which commit it was run.
+their results as they are written in the pull requests of the repositories: **I did not run them again today**, except the 16 tests of the Redis circuit breaker and the 7 of the bulkhead of Section 2, and the tests of Section 3, which I ran today on a copy of the release stack. Each row says on which commit it was run.
 The pieces the project does not have are done as a rehearsal in [rehearsal/](rehearsal/), with a stand-in of a checkout and of a payment provider:
 an integration test with Testcontainers, a contract test, an end-to-end test, a load test against an SLO, one chaos experiment and a proposal of the workflow that would run them.
-Section 4 has the real output of the rehearsal.
+Section 3 has the tests on the copy of the release stack, and Section 5 the real output of the rehearsal.
 
 ## 1. The pyramid for a distributed system, and what the project has
 
@@ -21,7 +21,7 @@ Section 4 has the real output of the rehearsal.
 | Gateway | `tests/smoke.sh` and `tests/integration.sh` of `csp-api-gateway` | Release head: 97 smoke checks ok, 0 failures; 307 integration checks passed, 0 failed (closing comment of #282) |
 | End to end (money path) | `tests/e2e/up.sh` and `tests/e2e/book-seats.sh` of `csp-workflow`: the saga that holds and confirms the seats, against the real `csp-booking-api` and `csp-catalog-api` through the gateway | `TOTAL passed=89 failed=0`, twice, on `c635586` ([csp-workflow#15](https://github.com/code-corhuila/csp-workflow/pull/15)); `TOTAL passed=105 failed=0`, twice, on `76256cb` ([csp-workflow#17](https://github.com/code-corhuila/csp-workflow/pull/17)) |
 | Chaos (partial) | The same end-to-end script kills the container of the workflow in the middle of a saga and makes the compensation fail on purpose; the Redis circuit breaker and the bulkhead of `csp-auth-api` have unit tests | See Section 2: 16 breaker tests and 7 bulkhead tests passed today on `a998029` |
-| Load | Nothing | Section 4 (rehearsal) |
+| Load | Nothing in the repositories | Section 3 (a copy of the release stack) and Section 5 (rehearsal) |
 
 Where the real dependencies come from: the project does not use the Testcontainers library. Real PostgreSQL and Redis come from containers that the scripts or the
 workflow start, or from the persistent development environment. The rehearsal does use Testcontainers, because it is the tool of the session. For validating the project my rule is to use the persistent
@@ -49,9 +49,113 @@ refuses them with `429`, so a slow dependency cannot drain the connection pool o
 `TestVerifyEmailChangeIsNotLimitedByTheBulkhead`. They are unit tests, not a load run: nobody has sent the traffic that fills the bulkhead on the real service.
 
 What is **not** injected: network latency, dropped messages and the death of Booking or Catalog in the middle of the traffic. I searched the repositories for `circuit breaker`, `resilience4j`, `gobreaker` and `hystrix`: the only breaker is the Redis one in
-`csp-auth-api`. The breaker that protects a call to another service, which is what the second half of the session asks for, is only in the rehearsal.
+`csp-auth-api`. The breaker that protects a call to another service, which is what the second half of the session asks for, is only in the rehearsal. Section 3 confirms on the running stack that the gateway has none: when `csp-auth-api` is killed, it answers every request with a `503` after about 2 seconds.
 
-## 3. The rehearsal
+## 3. Real tests on a copy of the release stack
+
+**How it was done.** The stack `csp-release` (release/3.0.0 of every repository, persistent, with the data of the team) was stopped by me, and I did not touch its volumes. I made a copy as a second Compose project (`csp-w15`),
+outside the repositories, with its own random passwords and keys and **empty data**, so the accounts of my teammates were not copied. I reused the images already built for `csp-release`, tagged with the new name and without rebuilding, and started only what the tests
+need: PostgreSQL, Redis, Mailpit, `csp-auth-api` and `csp-api-gateway`. The port of `csp-auth-api` was published only in the copy, to measure it without the gateway. One synthetic user was created through the normal flow
+(register `201`, link in Mailpit, confirm `201`, login `200`). When the tests ended I removed the copy (containers, volumes, image tags and its secrets) and checked that the 24 containers, the 4 volumes and the 15 images of `csp-release` were still there.
+The scripts are in [real-stack/](real-stack/) (`seed.py` and `tests.py`), and they read the synthetic credentials from the environment (`W15_EMAIL` and `W15_PASSWORD`). They expect the copy as described: Compose project `csp-w15`, the gateway on port 8000, Mailpit on 8025, and the port 18081 published only for `csp-auth-api`.
+
+**The limits that decide what can be measured**, read in the clone of `csp-api-gateway` (`nginx/`) and in the defaults of `csp-auth-api` (`internal/config`):
+
+| Where | Limit |
+|---|---|
+| Gateway, every route | 10 requests per second per client address, burst 20, answer `429` |
+| Gateway, `login`, `register` and `register/confirm` | their own bucket: 2 per second, burst 3 (ADR-060) |
+| Gateway, `forgot-password` | 1 per second, burst 2 |
+| `csp-auth-api`, passwords | bcrypt cost 12, at most 4 hashes at once, a wait of 100 ms and then `503` |
+| `csp-auth-api`, failed logins | 10 failures of one address lock it for 300 s (`429`); Redis is called with a 300 ms timeout and paused for 10 s after a failure |
+
+The SLO used here is the real one, from ADR-061 (D3): p95 of `POST /login` and `POST /register` at most 1 second. The traffic the workshop estimates is about 500 registrations a day.
+
+### A. The credential bucket of the gateway (the criterion of story #281)
+
+```text
+== A. the credential bucket of the gateway (2 r/s, burst 3) on POST /login, valid credentials
+12 requests in a row: 200 200 200 200 200 200 200 429 429 429 429 429 | Retry-After of a 429: 1
+sustained 5 req/s for 10 s: sent 50 | answers {200: 22, 429: 28} | expected about 4 + 2 x 10 = 24 accepted
+```
+
+The first requests pass (the burst plus the refill while the bcrypt of each login runs, about 0.3 s), and then every request gets `429` with `Retry-After: 1`. At 5 requests per second, 22 of 50 were accepted, which is the 2 per second of the bucket.
+
+### B. The per-client limit of the gateway on a cheap route
+
+```text
+== B. the per-client limit of the gateway (10 r/s, burst 20) on GET /jwks
+  rate  sent   200   429 other   p95 ms
+     8    48    48     0     0       27
+    15    90    77    13     0       23
+    30   180    77   103     0       26
+```
+
+The gateway accepts about 10 requests per second per address plus the burst of 20 (about 77 of 90 and of 180 in 6 seconds) and refuses the rest with `429`. Below that, the latency of an answer is about 25 ms. So **from one address nothing can load the services through the gateway**: the real capacity is measured in C without it.
+
+### C. Capacity of `csp-auth-api` without the gateway (login with valid credentials)
+
+```text
+== C. capacity of csp-auth-api, direct (no gateway), POST /login with valid credentials; SLO of ADR-061: p95 <= 1000 ms
+ rate  sent   200  429  503 other    p50    p95    p99 p95 of 200  SLO
+    5    50    50    0    0     0    222    252    265        252  met=True
+   10   100   100    0    0     0    228    252    266        252  met=True
+   15   150   150    0    0     0    232    255    267        255  met=True
+   20   200   175    0   25     0    301    339    364        344  met=False
+   30   300   177    0  123     0    300    342    353        346  met=False
+   40   400   176    0  224     0    130    353    366        362  met=False
+```
+
+- The service serves about **17.6 logins per second**, which is what the hash bound gives: 4 hashes at once, each of about 0.22 s. Up to 15 per second every login is answered `200` with p95 of about 255 ms. At 20 per second, 175 of 200 are served and 25 are refused; at 40 per second, 176 of 400.
+- What it refuses, it refuses with `503` and the code `SERVICE_UNAVAILABLE` and `Retry-After: 1`, and the logins it accepts keep the same latency (the p95 of the `200` stays between 252 and 362 ms). **The SLO of latency (p95 at most 1 s) is met at every rate; what falls is the share of logins served**: 44 % at 40 per second.
+- The criterion of story #281 says that the refusal must come in less than 200 ms. In the log of the service (1,240 logins, all this test and a burst of 40 at once), the `503` took **p50 101 ms, p95 140 ms and at most 725 ms**, and the `200`, p50 284 ms and p95 331 ms. So the criterion holds at the 95th percentile and not for the slowest ones in a burst. My client measured a p95 of 662 ms for the same `503`; the difference is my Python client with 40 threads, not the service.
+
+### D. Chaos: Redis stopped while the logins go on
+
+```text
+== D. chaos: Redis stopped while the logins go on (direct to csp-auth-api)
+redis stopped: Exited (0) Less than a second ago
+15 wrong-password logins with Redis down: 401 401 401 401 401 401 401 401 401 401 401 401 401 401 401 | total 3.9s | first request 885 ms, the rest p95 218 ms
+3 valid logins with Redis down: 200 200 200
+redis back: Up 7 seconds (healthy) | waiting 12 s for the pause of the breaker (10 s) to end
+control, Redis up again, 13 wrong-password logins: 401 401 401 401 401 401 401 401 401 401 429 429 429 (the lock of the 11th attempt is the criterion of story #280)
+WARN lines of auth-api in the last 2 minutes: 214 | messages: ['account login failure counter paused after a Redis failure, failed logins are not slowed meanwhile', 'login address locked', 'login attempt limit paused after a Redis failure, the login goes on without it', 'password hashing refused: too many hashes at once']
+```
+
+- **Redis down.** The 15 wrong-password logins were all `401`: **none was locked**, because the lock needs Redis and the limiter fails open. The first request took 885 ms (it waited for the Redis timeout), and the rest 218 ms at p95, because the breaker paused the calls to Redis. The 3 valid logins were `200`. This is the threat of the row S of the STRIDE table (the lock fails open when Redis does not answer), seen on the running service: someone who can make Redis fail can try passwords without a limit.
+- **Control, Redis back.** After the pause of 10 s, 10 wrong passwords answered `401` and the 11th, `429`: **the criterion 1 of story #280 holds**.
+- **The audit event of the lock (criterion 2 of #280)** is in the log of the service as `login address locked`, with `audit: login_locked`, `clientHash` (a SHA-256 of the address), `attempts: 10`, `lockedAt`, `lockSeconds: 300` and `traceId`. It has no email, no password and no address in clear.
+- The service wrote the warning of the paused limiter once for each pause (2 and 2 in the 5 minutes, because I ran the experiment twice after fixing a mistake in my script) and 396 warnings `password hashing refused: too many hashes at once`, one for each `503` of C and of the burst of 40.
+
+### E. Chaos: `csp-auth-api` killed in the middle of the traffic through the gateway
+
+```text
+== E. chaos: csp-auth-api killed in the middle of the traffic through the gateway (GET /jwks at 8 req/s)
+  at t=12.0 s: docker start (restart policy: on-failure) | state before: exited
+      window  sent   200   502   504 other  p95 ms
+ before kill    48    48     0     0     0      25
+      killed    48     0     0     0    48    2133
+ after start    48    44     0     0     4    1552
+   recovered    64    64     0     0     0      21
+first 200 after docker start: 0.9 s
+answers during the outage: 48, p95 2133 ms, max 2136 ms
+```
+
+- **There is no fast failure.** During the 6 seconds of the outage every request got `503` (the gateway turns `502`, `503` and `504` of the upstream into one `503`: `error_page 502 503 504 =503`), and each took about **2.0 s** to fail: `resolver_timeout` and `proxy_connect_timeout` are both 2 s. At 8 requests per second that is about 16 requests waiting at the same time. The rehearsal of Section 5 answers the same case in 1 ms because its breaker is open.
+- **The recovery is automatic and quick.** The first `200` came 0.9 s after `docker start`, with no action on the gateway, which resolves the name of the service with the resolver of Docker (`resolver 127.0.0.11 valid=10s`) and found it again. A few requests right after the start still failed (4 in 6 s).
+- **The restart policy did not help here.** The container has `on-failure`, and 6 seconds after `docker kill` it was still `exited`: it only came back when I started it.
+
+### What these results say
+
+| STRIDE row or story | Result on the running stack |
+|---|---|
+| S, criterion 1 of #280 | The lock of the 11th failed attempt works with Redis; with Redis down the limiter fails open |
+| S, criterion 2 of #280 | The audit event of the lock has the expected fields and none of the sensitive ones |
+| D, criterion 1 of #281 | The gateway refuses with `429` and `Retry-After` above 2 logins per second per address |
+| D, criterion 2 of #281 | The hash bound refuses with `503 SERVICE_UNAVAILABLE` at p95 140 ms; the slowest took 725 ms |
+| Resilience | No circuit breaker between the gateway and a dead service: each request fails after 2 s; the recovery is automatic |
+
+## 4. The rehearsal
 
 A small Go module with no dependencies, in [rehearsal/](rehearsal/). It does not touch any `csp-*` repository.
 
@@ -73,7 +177,7 @@ The tests:
 - **Load.** An open-loop generator (it keeps the rate whatever the answers) sends orders for 2 seconds at 100, 200, 300, 400 and 600 requests per second. The SLO of the rehearsal is p95 at most 250 ms and every order confirmed, with a target of 200 requests per second. The test must fail if the target is not met, and reports the first rate that breaks the SLO.
 - **Chaos.** At 100 orders per second for 5 seconds, the provider is killed at second 1 and started again at second 3. The test checks that the orders in flight are compensated, that the breaker opens and answers fast (`503`, p95 at most 50 ms), that the system recovers by itself, and that no seat stays held and the confirmed seats are exactly the orders answered `201`.
 
-## 4. Real output
+## 5. Real output of the rehearsal
 
 Go 1.27.0 on Windows 11, 2026-11-11. Two commands, from `15-week/01-session/rehearsal`: `go test -count=1 -v -run 'Contract|E2E|Load|Chaos' ./...` for the four tests that need no Docker, and
 `go test -count=1 -v -run Integration ./...` for the one that starts a container. The block below is the first one; I ran it again later the same day and the four tests passed again, with numbers that differ by a few milliseconds.
@@ -139,10 +243,14 @@ The two constraints are the point of the test: the database itself answers `2350
 - Without the release of the seat after a failed payment, `held` stayed at 9: `seats: free 999705, held 9, confirmed 286, orders answered 201: 286`.
 - With a breaker that never opens (threshold 1,000,000), `during the outage: compensated 189 (at most 30), rejected 0 (at least 100), rejected p95 0s (at most 50ms)`: every order waited for its own failure instead of being refused fast.
 
-## 5. What this does not prove
+## 6. What this does not prove
 
 - The rehearsal is one machine, with the checkout, the provider and the generator in the same process on the loopback interface. Real services add network, a database and other processes, so the numbers say how the design behaves, not how fast CineSync Platform is.
-- The SLO of the rehearsal (p95 250 ms, a target of 200 per second) is my assumption to have a number; it is not an SLO of the project. The project has no load figure: nobody has run a load test on its services.
+- The SLO of the rehearsal (p95 250 ms, a target of 200 per second) is my assumption to have a number; it is not an SLO of the project. The tests of Section 3 use the real one, from ADR-061.
+- The tests of Section 3 are one machine: Docker Desktop with 8 CPUs, where the services and my load generator (a Python script) share the processor. The generator adds its own delay under many threads (it showed in the `503` of a burst), so I took the times that matter from the log of the service.
+- Section 3 measures `csp-auth-api` without the gateway, which no client can do: through the gateway one address gets 2 logins per second. The 17.6 per second is the capacity of the service for all the clients together, not for one.
+- Each step of C lasted 10 seconds, and each experiment of D and E ran once. The data was empty and there was one synthetic user, so the database did not have the size of a real one. I did not test the confirmation of a registration or the money path on the copy.
+- The images were those already built for `csp-release` from the clones on `release/3.0.0`; I did not rebuild them or check the commit they were built from.
 - A step lasts 2 seconds. A real load test runs for minutes to find leaks and slow growth, and it uses a tool such as k6 (not installed on this machine) that reports the rate it really sent.
 - The integration test needs Docker. I ran it once, before knowing that another stack was running in Docker on this machine, and no container was left. I did not run it again, so the output above is from that one run.
 - `ci.yml` was checked only as YAML (it parses, with the triggers `pull_request` and `schedule` and three jobs). I did not run `actionlint` on it, because that needs a container image and Docker was busy with another stack. It never ran on GitHub, where Actions is locked by billing.
@@ -150,12 +258,12 @@ The two constraints are the point of the test: the database itself answers `2350
 - The results of Section 1 come from the pull requests, on the commits they name, and they were not run again today. GitHub Actions is locked by billing, so none of them ran in CI.
 - The money path of the project is the saga that holds and confirms seats; there is no payment step in it, and the payment of the rehearsal is the example of the session.
 
-## 6. Self-check (answers)
+## 7. Self-check (answers)
 
 1. **In the distributed pyramid you have...** many unit tests, fewer integration and contract tests, and few end-to-end tests, with load and chaos on top.
 2. **Testcontainers are used to...** run a real database or broker in a container during the integration tests, and remove it afterwards. The rehearsal does it with PostgreSQL 16, and the database itself refuses a duplicate order and a status outside the list.
-3. **Load testing exists to...** find the capacity and latency limits against the SLOs before the users do. The rehearsal found the limit at the rate where its design said.
-4. **Chaos engineering means...** injecting a failure to check that the system degrades gracefully. The rehearsal kills the provider and the system refuses fast and recovers.
+3. **Load testing exists to...** find the capacity and latency limits against the SLOs before the users do. The rehearsal found the limit at the rate where its design said, and on the real stack the limit of `csp-auth-api` was 17.6 logins per second, what its hash bound gives.
+4. **Chaos engineering means...** injecting a failure to check that the system degrades gracefully. The rehearsal kills the provider and the system refuses fast and recovers; on the real stack, with `csp-auth-api` killed, the gateway refuses every request after 2 seconds and recovers by itself in under 1 second.
 5. **Contract tests protect...** the compatibility between producers and consumers across services.
 6. **"All unit tests green but dead at 200 req/s" is fixed by...** a load test and a chaos test before the release. A load test finds the limit, and a chaos test shows what happens when a dependency dies.
 
