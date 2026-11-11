@@ -1,0 +1,11 @@
+{
+  "consumer": "checkout",
+  "provider": "payments",
+  "request": { "method": "POST", "path": "/pay" },
+  "response": {
+    "status": 200,
+    "contentType": "application/json",
+    "requiredFields": ["id", "status"],
+    "allowedStatus": ["APPROVED"]
+  }
+}
