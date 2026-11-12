@@ -12,8 +12,8 @@ Period: 2026-11-08 to 2026-11-11 (the week is still open). Author: Oscar Sierra 
 | csp-front | 1 |
 | csp-infra-postgres | 1 |
 | csp-ticketing-api | 1 |
-| sistemas-distribuidos-2026-b-g1 (my fork) | 10 |
-| **Total** | **17** |
+| sistemas-distribuidos-2026-b-g1 (my fork) | 12 |
+| **Total** | **19** |
 
 ### csp-docs
 
@@ -52,10 +52,12 @@ Period: 2026-11-08 to 2026-11-11 (the week is still open). Author: Oscar Sierra 
 
 ### sistemas-distribuidos-2026-b-g1 (my fork)
 
-10 commits
+12 commits
 
 | Commit | Date | Message |
 |---|---|---|
+| `8adfecb` | 2026-11-11 | docs(w15): add the weekly status, the commit log and the summary of sessions 1 and 2 |
+| `d718ae1` | 2026-11-11 | docs(certification): add chapter 12 evidence and study log row |
 | `c89d5d5` | 2026-11-11 | docs(w15): add the session 2 report on the release and the operability checklist |
 | `452b783` | 2026-11-11 | test(w15): add the rehearsal of the release, the gate, the tag and the rollback |
 | `1aac1f4` | 2026-11-11 | docs(w15): add the tests on a copy of the release stack to the session 1 report |
