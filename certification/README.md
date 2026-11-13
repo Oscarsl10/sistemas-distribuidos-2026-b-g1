@@ -35,14 +35,15 @@
 | 2026-11-12 | 3.00 | Chapter 13 | evidence/13-chapter-13.png |
 | 2026-11-12 | 3.00 | Chapter 14 | evidence/14-chapter-14.png |
 | 2026-11-13 | 2.07 | Lab 1 | evidence/15-lab-1.png |
-| Total | 50.24 | | |
+| 2026-11-13 | 1.28 | Lab 2 | evidence/16-lab-2.png |
+| Total | 51.52 | | |
 
 ## Labs
 
 | Evidence file | Lab name | What I built | What failed first and how I fixed it |
 |---|---|---|---|
 | evidence/15-lab-1.png | Design Cases and Practices of an O&M Solution | I created subnet-db and sg-db, bought the rds-web MySQL 5.7 primary/standby instance, and installed Discuz! against it. I created the SMN topic test with a confirmed email subscription and the Cloud Eye event alarm alarm-reboot on ecs-web. I installed ICAgent to ship /var/log/messages to LTS with the host group hccdp and a keyword alarm on Stopped. | ICAgent first showed Authentication error in LTS because the secret key in my install command was missing its first character. I compared the command with credentials.csv, fixed it, and the agent turned Running. The Discuz! page also timed out until I used http instead of https. The sandbox account could not create the LTS alarm notification rule, so the hccdp alarm has no notification. |
-| evidence/16-lab-2.png | TODO | TODO | TODO |
+| evidence/16-lab-2.png | High-Performance Network Solution | I created subnet-db, sg-db and the rds-discuz MySQL 5.7 primary/standby instance, and installed Discuz! on ecs-web. I unbound the EIP, created the public NAT gateway nat-web with an SNAT rule for subnet-web and a DNAT rule for port 80, and checked that the forum still loaded. I created vpc-om with subnet-om, sg-om and the jump server ecs-om, connected the VPCs with the peering connection peering-web, and added a private DNS zone www.abc.com pointing to ecs-web. From ecs-om, both ping 192.168.1.161 and ping www.abc.com answered with 0% loss. | The Discuz! installer sent the form with localhost as the database server and failed to connect, so I went back and entered the RDS floating IP. The installer frame then stayed blank, and I confirmed the install by opening the forum and by finding install.lock on the server. I also reloaded the whole lab page by mistake, but the session and resources survived. |
 | evidence/17-lab-3.png | TODO | TODO | TODO |
 | evidence/18-lab-4.png | TODO | TODO | TODO |
 
