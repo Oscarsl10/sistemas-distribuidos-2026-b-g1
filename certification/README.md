@@ -34,13 +34,14 @@
 | 2026-11-11 | 3.00 | Chapter 12 | evidence/12-chapter-12.png |
 | 2026-11-12 | 3.00 | Chapter 13 | evidence/13-chapter-13.png |
 | 2026-11-12 | 3.00 | Chapter 14 | evidence/14-chapter-14.png |
-| Total | 48.17 | | |
+| 2026-11-13 | 2.07 | Lab 1 | evidence/15-lab-1.png |
+| Total | 50.24 | | |
 
 ## Labs
 
 | Evidence file | Lab name | What I built | What failed first and how I fixed it |
 |---|---|---|---|
-| evidence/15-lab-1.png | TODO | TODO | TODO |
+| evidence/15-lab-1.png | Design Cases and Practices of an O&M Solution | I created subnet-db and sg-db, bought the rds-web MySQL 5.7 primary/standby instance, and installed Discuz! against it. I created the SMN topic test with a confirmed email subscription and the Cloud Eye event alarm alarm-reboot on ecs-web. I installed ICAgent to ship /var/log/messages to LTS with the host group hccdp and a keyword alarm on Stopped. | ICAgent first showed Authentication error in LTS because the secret key in my install command was missing its first character. I compared the command with credentials.csv, fixed it, and the agent turned Running. The Discuz! page also timed out until I used http instead of https. The sandbox account could not create the LTS alarm notification rule, so the hccdp alarm has no notification. |
 | evidence/16-lab-2.png | TODO | TODO | TODO |
 | evidence/17-lab-3.png | TODO | TODO | TODO |
 | evidence/18-lab-4.png | TODO | TODO | TODO |
