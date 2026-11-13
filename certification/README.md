@@ -36,7 +36,8 @@
 | 2026-11-12 | 3.00 | Chapter 14 | evidence/14-chapter-14.png |
 | 2026-11-13 | 2.07 | Lab 1 | evidence/15-lab-1.png |
 | 2026-11-13 | 1.28 | Lab 2 | evidence/16-lab-2.png |
-| Total | 51.52 | | |
+| 2026-11-13 | 1.77 | Lab 3 | evidence/17-lab-3.png |
+| Total | 53.29 | | |
 
 ## Labs
 
@@ -44,7 +45,7 @@
 |---|---|---|---|
 | evidence/15-lab-1.png | Design Cases and Practices of an O&M Solution | I created subnet-db and sg-db, bought the rds-web MySQL 5.7 primary/standby instance, and installed Discuz! against it. I created the SMN topic test with a confirmed email subscription and the Cloud Eye event alarm alarm-reboot on ecs-web. I installed ICAgent to ship /var/log/messages to LTS with the host group hccdp and a keyword alarm on Stopped. | ICAgent first showed Authentication error in LTS because the secret key in my install command was missing its first character. I compared the command with credentials.csv, fixed it, and the agent turned Running. The Discuz! page also timed out until I used http instead of https. The sandbox account could not create the LTS alarm notification rule, so the hccdp alarm has no notification. |
 | evidence/16-lab-2.png | High-Performance Network Solution | I created subnet-db, sg-db and the rds-discuz MySQL 5.7 primary/standby instance, and installed Discuz! on ecs-web. I unbound the EIP, created the public NAT gateway nat-web with an SNAT rule for subnet-web and a DNAT rule for port 80, and checked that the forum still loaded. I created vpc-om with subnet-om, sg-om and the jump server ecs-om, connected the VPCs with the peering connection peering-web, and added a private DNS zone www.abc.com pointing to ecs-web. From ecs-om, both ping 192.168.1.161 and ping www.abc.com answered with 0% loss. | The Discuz! installer sent the form with localhost as the database server and failed to connect, so I went back and entered the RDS floating IP. The installer frame then stayed blank, and I confirmed the install by opening the forum and by finding install.lock on the server. I also reloaded the whole lab page by mistake, but the session and resources survived. |
-| evidence/17-lab-3.png | TODO | TODO | TODO |
+| evidence/17-lab-3.png | Highly Elastic Service System | I created subnet-db, sg-db and the rds-web MySQL 5.7 primary/standby instance, installed Discuz! on ecs-web, unbound its EIP and put it behind the shared load balancer elb-web with listener-web on TCP 80. I built the image image-web, the AS configuration as-config-web and the AS group as-group-web (minimum 1, expected 2, maximum 5, attached to elb-web), with a CPU scale-out policy above 70% and a scale-in policy below 30%. I also created a bandwidth scaling policy that sets the elb-web EIP to 30 Mbit/s, added ecs-web to the group with instance protection, changed the AS configuration to c7n.large.4 and configured an SMN topic notification. | I could not type the underscore in the lab console, so the backend group is named server-group-web instead of server_group-web. My first AS configuration had no flavor selected and a 100 GiB disk, so I recreated it with s6.large.2 and 40 GiB. The CPU scale-out never triggered: I ran stress for 900 seconds and the CPU reached 100%, but the scale-in policy had already removed one instance and the alarm did not add one before the lab ended. |
 | evidence/18-lab-4.png | TODO | TODO | TODO |
 
 ## Final exam
