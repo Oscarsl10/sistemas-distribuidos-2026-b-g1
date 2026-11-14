@@ -12,7 +12,7 @@
 | Course (exact name) | HCCDP-Solution Architectures Course |
 | Course link | https://e.huawei.com/en/talent/ict-academy/#/ict-courses-detail?courseId=6WtKiPd1S1YelBB0AUbE1vXlPgk |
 | Start date (YYYY-MM-DD) | 2026-10-29 |
-| Completion date (YYYY-MM-DD) | TODO |
+| Completion date (YYYY-MM-DD) | 2026-11-14 |
 
 ## Study log
 
@@ -51,8 +51,8 @@
 
 ## Final exam
 
-- Score: TODO
-- Date (YYYY-MM-DD): TODO
+- Score: 71
+- Date (YYYY-MM-DD): 2026-11-14
 - File: evidence/19-final-exam.png
 
 ## Skills summary
