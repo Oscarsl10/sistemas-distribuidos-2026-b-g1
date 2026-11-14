@@ -57,4 +57,9 @@
 
 ## Skills summary
 
-TODO (5 to 7 lines, English, first person, at least three concrete design techniques from the course)
+- I designed network tiers with separate subnets and security groups, opening MySQL only to the web security group instead of to every address.
+- I removed the public IP of a web server with a NAT gateway (SNAT and DNAT rules), connected two VPCs with a peering connection and resolved internal names with a private DNS zone.
+- I spread traffic with a shared load balancer and scaled the web tier across zones with an image, an AS configuration, an AS group and alarm policies with a cooldown, and I also scaled bandwidth.
+- I built database high availability with an RDS primary/standby pair, synchronized it with a DRS full plus incremental task and added a read replica to spread the reads.
+- I placed a Redis cache (DCS) in front of the database and configured the application to use it.
+- I set up observability with log collection and keyword alarms, Cloud Eye alarms and SMN notifications, and I wrote RTO, RPO and the recovery pattern for my team's system.
