@@ -49,7 +49,6 @@ Only my own work is listed. Repositories shared with the team (`csp-front`, `csp
 
 ## 4. Plan for next week
 
-- Prepare the final presentation and the documentation of week 16, with the retrospective of session 2 and the real state of the release.
 - Take the findings of session 1 to the team to decide: the fail-open case of the lock, a fast failure at the gateway, and a store for the traces.
 - Take the finding of the test report to the team: the coverage floor and the contract tests of the repositories that have none, and update TD-034.
 
