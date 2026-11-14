@@ -5,30 +5,30 @@ Author: Oscar Guillermo Sierra Lozano (`Oscarsl10`). Team CineSync Platform, Gro
 The task of the session: promote and tag the production-grade release, verify it against the operability checklist, demo it under load and failure,
 and hold a retrospective that feeds the final presentation.
 
-**Scope of this work.** It is a rehearsal and an audit. **Nothing is applied to the project**: no `csp-*` repository was changed, no tag was created,
-no pull request was touched. The release itself is not mine to cut: the release pull requests wait for the professor and the leader (the team rule),
-so what I can do honestly is (1) rehearse the mechanics in a throwaway repository, (2) read the state of the checklist in the repositories and on GitHub,
+**Scope of this work.** It is a rehearsal and an audit. **Nothing of it is applied to the project**: no `csp-*` repository was changed by the rehearsals, and the report
+did not create a tag or touch a pull request. The release itself was cut by the team: when I wrote the report (2026-11-11) the release pull requests were open, and on
+2026-11-13 they were merged and tagged (Section 1 has the state of 2026-11-14). What the report does is (1) rehearse the mechanics in a throwaway repository, (2) read the state of the checklist in the repositories and on GitHub,
 and (3) reuse the results of [session 1](../01-session/README.md), which ran load and chaos on a copy of the release stack.
-Every statement about the project was read from GitHub or from the repositories (branch `develop`) on 2026-11-11.
+Every statement about the project was read from GitHub or from the repositories (branch `develop`) on 2026-11-11, except the release state of Section 1 and the checklist rows marked as updated, which I read again on 2026-11-14.
 
 ## 1. Where the release is today
 
 The page asks to promote `develop -> qa -> main` and tag `v3.0.0`. In this project the cut is `release/3.0.0`, one pull request per repository to `main` (norm 6.3.2).
 
-| Repository | Release PR | State | Review | Size (added / deleted) |
+| Repository | Release PR | State on 2026-11-14 | Review | Size (added / deleted) |
 |---|---|---|---|---|
-| `csp-auth-api` | #83 | open | approved | 36,887 / 72 |
-| `csp-auth-db` | #33 | open | approved | 595 / 3 |
-| `csp-auth-portal` | #49 | open | approved | 4,767 / 254 |
-| `csp-booking-api` | #61 | open | approved | 3,539 / 126 |
-| `csp-workflow` | #26 | open | approved | 5,252 / 4 |
-| `csp-api-gateway` | #6 | open | approved | 1,639 / 5 |
-| `csp-ticketing-api` | #84 | open | review required, blocked | 9,129 / 6 |
+| `csp-auth-api` | #83 | merged | approved | 36,887 / 72 |
+| `csp-auth-db` | #33 | merged | approved | 595 / 3 |
+| `csp-auth-portal` | #49 | merged | approved | 4,767 / 254 |
+| `csp-booking-api` | #61 | merged | approved | 3,539 / 126 |
+| `csp-workflow` | #26 | merged | approved | 5,252 / 4 |
+| `csp-api-gateway` | #6 | merged | approved | 1,639 / 5 |
+| `csp-ticketing-api` | #84 | merged | approved | 9,129 / 6 |
 
-- Six of the seven are approved; the ticketing one still needs its review. The merge state of the six is `UNSTABLE`, which is what the billing lock of GitHub Actions
-  (since 2026-10-14) produces: no check runs, so none can be green.
-- **No repository has a `v3` tag.** I checked the seven with the tags API. The last release is `v2.0.0`. So the "tag `v3.0.0`" step is not done, and the order of the
-  project is: merge `csp-auth-db`, then the APIs, then the portal, and tag after the merge (a tag is never moved).
+- **What I wrote on 2026-11-11 and what changed.** That day six of the seven were approved, the ticketing one still needed its review, and no repository had a `v3` tag.
+  On 2026-11-14 all seven are approved and merged, in the order `csp-auth-db` (04:06 UTC on 2026-11-14), then the APIs and the gateway, then the portal, and `csp-booking-api` last (04:15 UTC).
+  The tag `v3.0.0` exists in each of the seven and in the other repositories of the release; I checked twelve repositories with the tags API. A tag is never moved.
+- The checks never ran: GitHub Actions has been locked by billing since 2026-10-14, so the merge states were `UNSTABLE` and none could be green.
 - The size column is raw lines of the whole release, not the 400-line cap of a single PR: a release is a promotion of many stories.
 
 ## 2. The rehearsal: cut, gate, tag, deploy and roll back
@@ -71,7 +71,7 @@ Each item of the page, with the evidence I found and what is missing. "Not found
 
 | Item of the page | Evidence | Gap |
 |---|---|---|
-| Acceptance criteria met, CI green | The release PRs are approved by review. The CI cannot run (billing lock), so the pipelines were validated locally by the team before each merge. | **No green CI exists for the release.** The page requires it. |
+| Acceptance criteria met, CI green | The release PRs were approved by review and merged. The CI cannot run (billing lock), so the pipelines were validated locally before each merge. | **No green CI exists for the release.** The page requires it. |
 | Coverage and security scans in CI | In week 14 I read ten workflows: no coverage floor, no secret scan, no dependency scan. Not re-read today. | Both scans still missing, as of week 14 |
 | Zero-downtime deploy | `csp-docs` (`05-architecture/deployment.md`) describes a rolling deploy and `kubectl rollout undo`. The running stack is Docker Compose. | The documented strategy is not the one that runs. Not rehearsed on the stack. |
 | Rehearsed rollback | Section 2 rehearses it on a throwaway repository. | Not rehearsed on the real stack or with the real images |
@@ -83,9 +83,9 @@ Each item of the page, with the evidence I found and what is missing. "Not found
 | Load test meets the SLO | Session 1, on a copy of the release stack: p95 of the logins that were served stayed at most 362 ms at every rate, below the 1 s SLO. The service served about 17.6 logins per second and refused the rest with `503`. | One service, one machine, 10 s steps |
 | Chaos shows graceful degradation | Session 1: with `csp-auth-api` killed the gateway answered `503` after 2 s and recovered by itself in under 1 s; with Redis down the lock failed open. The workflow service has e2e tests of saga compensation and crash recovery. | Degradation exists but is not fast (no circuit breaker at the gateway) and one case fails open |
 | Consistency under failure (outbox, idempotency) | Outbox relay with its metrics and alerts; `Idempotency-Key` required on register and confirm (a 400 without it, seen in session 1). | Not re-tested under failure today |
-| Versioned `v3.0.0`, CHANGELOG, ADRs, runbooks | CHANGELOG, ADRs and a runbook per service exist in `csp-docs`. | **The tag does not exist** (Section 1) |
+| Versioned `v3.0.0`, CHANGELOG, ADRs, runbooks | Updated on 2026-11-14: the tag `v3.0.0` exists (Section 1). CHANGELOG and ADRs exist, seven ADRs were accepted on 2026-11-11, and the runbooks of `csp-worker`, `csp-workflow` and `csp-front` were added ([csp-docs#402](https://github.com/code-corhuila/csp-docs/pull/402)). | Met, except that the pipeline behind the tag was not green |
 
-The score, counted by me: of the 13 rows, 3 have solid evidence that I saw (alert with runbook, load, chaos with the saga), and the others are partial, unproven or missing.
+The score, counted by me: of the 13 rows, 4 have solid evidence that I saw (alert with runbook, load, chaos with the saga, and since 2026-11-14 the tag with its documents), and the others are partial, unproven or missing.
 The page warns that the release is judged on operability; the honest reading is that the project has the pieces and lacks three proofs:
 a green pipeline, a trace backend, and a rollback on the real stack.
 
@@ -124,11 +124,11 @@ shown at all until a backend stores them.
 **What the metrics show.** I have these figures, from my own measurements and from GitHub, and no others:
 - SLO of login and register: p95 at most 1 s. Measured: at most 362 ms for served requests; 17.6 logins per second of capacity (session 1).
 - Recovery after killing a service: first `200` 0.9 s after the restart.
-- Delivery: 138 commits in the week 14 evidence (`14-week/hu-status/commits.md`). I do not have the lead time or the deployment frequency of the release: **the release has not been deployed to a tagged `main`**, so those DORA figures do not exist yet, and I will not estimate them.
+- Delivery: 138 commits in the week 14 evidence (`14-week/hu-status/commits.md`). The release is now merged and tagged, but I do not have a deployment of it to measure, so the lead time and the deployment frequency of the release are not estimated.
 
 ## 6. What this does not prove
 
-- That the release is production-grade. The checklist above says three proofs are missing, and the tag does not exist.
+- That the release is production-grade. The checklist above says three proofs are missing (a green pipeline, a trace backend and a rollback on the real stack); the tag exists since 2026-11-13 but it was cut with no green pipeline.
 - That the checks of Section 3 are current for every repository: scans and workflows are as I read them in week 14.
 - That a rollback works on the real stack. Only the mechanics were rehearsed.
 - The demo was not run live for this session: it is a script built on the results of session 1.
@@ -136,7 +136,7 @@ shown at all until a backend stores them.
 ## 7. Self-check (answers)
 
 1. MVP 3 must add operability: observability, zero-downtime deploy, security and proven resilience. Not only features.
-2. The final release is tagged `v3.0.0` on `main`, through the gated pipeline. In this project it is still pending: the release PRs are open.
+2. The final release is tagged `v3.0.0` on `main`, through the gated pipeline. In this project it was done on 2026-11-13 for the seven repositories of Section 1, with no green pipeline because of the billing lock.
 3. A production-grade demo shows live metrics and traces, load within the SLO and a graceful failure. Not only the happy path.
 4. Resilience is credible only if it was load- and chaos-tested rather than assumed (session 1 did both on a copy of the release stack).
 5. The checklist includes a rehearsed rollback, an alert with a runbook, security and resilience.
